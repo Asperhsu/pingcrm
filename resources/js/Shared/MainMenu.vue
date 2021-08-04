@@ -28,20 +28,25 @@
 </template>
 
 <script>
+import { usePage } from '@inertiajs/inertia-vue3'
 import Icon from '@/Shared/Icon'
 
 export default {
   components: {
     Icon,
   },
-  methods: {
-    isUrl(...urls) {
-      let currentUrl = this.$page.url.substr(1)
+
+  setup () {
+    const page = usePage();
+    const isUrl = (...urls) => {
+      let currentUrl = page.url.value.substr(1)
       if (urls[0] === '') {
         return currentUrl === ''
       }
       return urls.filter(url => currentUrl.startsWith(url)).length
-    },
+    }
+
+    return { isUrl };
   },
 }
 </script>

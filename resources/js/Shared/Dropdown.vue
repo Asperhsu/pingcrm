@@ -1,18 +1,19 @@
 <template>
-  <button type="button" @click="show = true">
+  <button type="button" @click="show = true" ref="root">
     <slot />
-    <portal v-if="show" to="dropdown">
-      <div>
+    <teleport to="body">
+      <div v-if="show">
         <div style="position: fixed; top: 0; right: 0; left: 0; bottom: 0; z-index: 99998; background: black; opacity: .2" @click="show = false" />
         <div ref="dropdown" style="position: absolute; z-index: 99999;" @click.stop="show = autoClose ? false : true">
           <slot name="dropdown" />
         </div>
       </div>
-    </portal>
+    </teleport>
   </button>
 </template>
 
 <script>
+import { ref, watch, nextTick, onMounted } from 'vue'
 import Popper from 'popper.js'
 
 export default {
@@ -30,33 +31,36 @@ export default {
       default: true,
     },
   },
-  data() {
-    return {
-      show: false,
-    }
-  },
-  watch: {
-    show(show) {
+  setup (props) {
+    const root = ref(null);
+    const dropdown = ref(null);
+    const show = ref(false);
+    let popper;
+
+    watch(show, (show) => {
       if (show) {
-        this.$nextTick(() => {
-          this.popper = new Popper(this.$el, this.$refs.dropdown, {
-            placement: this.placement,
+        nextTick(function () {
+          popper = new Popper(root.value, dropdown.value, {
+            placement: props.placement,
             modifiers: {
-              preventOverflow: { boundariesElement: this.boundary },
+              preventOverflow: { boundariesElement: props.boundary },
             },
           })
-        })
-      } else if (this.popper) {
-        setTimeout(() => this.popper.destroy(), 100)
+        });
+      } else if (popper) {
+        setTimeout(() => popper.destroy(), 100)
       }
-    },
-  },
-  mounted() {
-    document.addEventListener('keydown', e => {
-      if (e.keyCode === 27) {
-        this.show = false
-      }
-    })
+    });
+
+    onMounted(() => {
+      document.addEventListener('keydown', e => {
+        if (e.keyCode === 27) {
+          show.value = false
+        }
+      })
+    });
+
+    return { root, dropdown, show };
   },
 }
 </script>

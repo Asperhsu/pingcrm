@@ -1,4 +1,6 @@
 <template>
+  <inertia-head title="Create Contact" />
+
   <div>
     <h1 class="mb-8 font-bold text-3xl">
       <inertia-link class="text-indigo-400 hover:text-indigo-600" :href="route('contacts')">Contacts</inertia-link>
@@ -34,13 +36,14 @@
 </template>
 
 <script>
+import { useForm } from '@inertiajs/inertia-vue3'
+import route from '@/route'
 import Layout from '@/Shared/Layout'
 import TextInput from '@/Shared/TextInput'
 import SelectInput from '@/Shared/SelectInput'
 import LoadingButton from '@/Shared/LoadingButton'
 
 export default {
-  metaInfo: { title: 'Create Contact' },
   components: {
     LoadingButton,
     SelectInput,
@@ -50,27 +53,23 @@ export default {
   props: {
     organizations: Array,
   },
-  remember: 'form',
-  data() {
-    return {
-      form: this.$inertia.form({
-        first_name: null,
-        last_name: null,
-        organization_id: null,
-        email: null,
-        phone: null,
-        address: null,
-        city: null,
-        region: null,
-        country: null,
-        postal_code: null,
-      }),
-    }
-  },
-  methods: {
-    store() {
-      this.form.post(this.route('contacts.store'))
-    },
+  setup () {
+    const form = useForm({
+      first_name: null,
+      last_name: null,
+      organization_id: null,
+      email: null,
+      phone: null,
+      address: null,
+      city: null,
+      region: null,
+      country: null,
+      postal_code: null,
+    });
+
+    const store = () => form.post(route('contacts.store'));
+
+    return { form, store };
   },
 }
 </script>

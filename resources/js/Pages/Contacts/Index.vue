@@ -1,4 +1,6 @@
 <template>
+  <inertia-head title="Contacts" />
+
   <div>
     <h1 class="mb-8 font-bold text-3xl">Contacts</h1>
     <div class="mb-6 flex justify-between items-center">
@@ -12,7 +14,7 @@
       </search-filter>
       <inertia-link class="btn-indigo" :href="route('contacts.create')">
         <span>Create</span>
-        <span class="hidden md:inline">Contact</span>
+        <span class="hidden md:inline"> Contact</span>
       </inertia-link>
     </div>
     <div class="bg-white rounded-md shadow overflow-x-auto">
@@ -63,16 +65,17 @@
 </template>
 
 <script>
-import Icon from '@/Shared/Icon'
+import { reactive, watch } from 'vue'
+import { Inertia } from '@inertiajs/inertia'
 import pickBy from 'lodash/pickBy'
-import Layout from '@/Shared/Layout'
 import throttle from 'lodash/throttle'
-import mapValues from 'lodash/mapValues'
+import route from '@/route'
+import Icon from '@/Shared/Icon'
+import Layout from '@/Shared/Layout'
 import Pagination from '@/Shared/Pagination'
 import SearchFilter from '@/Shared/SearchFilter'
 
 export default {
-  metaInfo: { title: 'Contacts' },
   components: {
     Icon,
     Pagination,
@@ -83,26 +86,27 @@ export default {
     filters: Object,
     contacts: Object,
   },
-  data() {
-    return {
-      form: {
-        search: this.filters.search,
-        trashed: this.filters.trashed,
-      },
-    }
-  },
-  watch: {
-    form: {
-      deep: true,
-      handler: throttle(function() {
-        this.$inertia.get(this.route('contacts'), pickBy(this.form), { preserveState: true })
+  setup (props) {
+    const form = reactive({
+      search: props.filters.search,
+      trashed: props.filters.trashed,
+    });
+
+    watch(
+      form,
+      throttle(function () {
+        Inertia.get(route('contacts'), pickBy(form), { preserveState: true })
       }, 150),
-    },
-  },
-  methods: {
-    reset() {
-      this.form = mapValues(this.form, () => null)
-    },
+      {deep: true}
+    );
+
+    const reset = () => {
+      for (let key in form) {
+        form[key] = null;
+      }
+    };
+
+    return { form, reset };
   },
 }
 </script>

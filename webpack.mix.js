@@ -1,7 +1,7 @@
-const path = require('path')
 const mix = require('laravel-mix')
 const cssImport = require('postcss-import')
 const cssNesting = require('postcss-nesting')
+const webpack = require('webpack');
 
 /*
  |--------------------------------------------------------------------------
@@ -16,7 +16,7 @@ const cssNesting = require('postcss-nesting')
 
 mix
   .js('resources/js/app.js', 'public/js')
-  .vue({ runtimeOnly: true })
+  .vue()
   .alias({ '@': 'resources/js' })
   .postCss('resources/css/app.css', 'public/css', [
     // prettier-ignore
@@ -26,3 +26,12 @@ mix
   ])
   .version()
   .sourceMaps()
+  .webpackConfig ({
+    plugins: [
+        // vue esm-bundler
+        new webpack.DefinePlugin({
+            __VUE_OPTIONS_API__: true,
+            __VUE_PROD_DEVTOOLS__: false,
+        }),
+    ],
+  })

@@ -1,4 +1,6 @@
 <template>
+  <inertia-head :title="`${form.first_name} ${form.last_name}`" />
+
   <div>
     <div class="mb-8 flex justify-start max-w-3xl">
       <h1 class="font-bold text-3xl">
@@ -34,6 +36,9 @@
 </template>
 
 <script>
+import { Inertia } from '@inertiajs/inertia'
+import { useForm } from '@inertiajs/inertia-vue3'
+import route from '@/route'
 import Layout from '@/Shared/Layout'
 import TextInput from '@/Shared/TextInput'
 import FileInput from '@/Shared/FileInput'
@@ -42,11 +47,6 @@ import LoadingButton from '@/Shared/LoadingButton'
 import TrashedMessage from '@/Shared/TrashedMessage'
 
 export default {
-  metaInfo() {
-    return {
-      title: `${this.form.first_name} ${this.form.last_name}`,
-    }
-  },
   components: {
     FileInput,
     LoadingButton,
@@ -58,36 +58,38 @@ export default {
   props: {
     user: Object,
   },
-  remember: 'form',
-  data() {
-    return {
-      form: this.$inertia.form({
-        _method: 'put',
-        first_name: this.user.first_name,
-        last_name: this.user.last_name,
-        email: this.user.email,
-        password: null,
-        owner: this.user.owner,
-        photo: null,
-      }),
-    }
-  },
-  methods: {
-    update() {
-      this.form.post(this.route('users.update', this.user.id), {
-        onSuccess: () => this.form.reset('password', 'photo'),
-      })
-    },
-    destroy() {
+  setup (props) {
+    const form = useForm({
+      first_name: props.user.first_name,
+      last_name: props.user.last_name,
+      email: props.user.email,
+      password: null,
+      owner: props.user.owner,
+      photo: null,
+    });
+
+    const update = () => {
+      form
+        .transform(data => ({
+          _method: 'put',
+          ...data
+        }))
+        .post(route('users.update', props.user.id), {
+          onSuccess: () => form.reset('password', 'photo'),
+        });
+    };
+    const destroy = () => {
       if (confirm('Are you sure you want to delete this user?')) {
-        this.$inertia.delete(this.route('users.destroy', this.user.id))
+        Inertia.delete(route('users.destroy', props.user.id))
       }
-    },
-    restore() {
+    };
+    const restore = () => {
       if (confirm('Are you sure you want to restore this user?')) {
-        this.$inertia.put(this.route('users.restore', this.user.id))
+        Inertia.put(route('users.restore', props.user.id))
       }
-    },
+    };
+
+    return { form, update, destroy, restore };
   },
 }
 </script>

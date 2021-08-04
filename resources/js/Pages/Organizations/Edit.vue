@@ -1,4 +1,6 @@
 <template>
+  <inertia-head :title="form.name" />
+
   <div>
     <h1 class="mb-8 font-bold text-3xl">
       <inertia-link class="text-indigo-400 hover:text-indigo-600" :href="route('organizations')">Organizations</inertia-link>
@@ -70,6 +72,9 @@
 </template>
 
 <script>
+import { Inertia } from '@inertiajs/inertia'
+import { useForm } from '@inertiajs/inertia-vue3'
+import route from '@/route'
 import Icon from '@/Shared/Icon'
 import Layout from '@/Shared/Layout'
 import TextInput from '@/Shared/TextInput'
@@ -78,9 +83,6 @@ import LoadingButton from '@/Shared/LoadingButton'
 import TrashedMessage from '@/Shared/TrashedMessage'
 
 export default {
-  metaInfo() {
-    return { title: this.form.name }
-  },
   components: {
     Icon,
     LoadingButton,
@@ -92,35 +94,31 @@ export default {
   props: {
     organization: Object,
   },
-  remember: 'form',
-  data() {
-    return {
-      form: this.$inertia.form({
-        name: this.organization.name,
-        email: this.organization.email,
-        phone: this.organization.phone,
-        address: this.organization.address,
-        city: this.organization.city,
-        region: this.organization.region,
-        country: this.organization.country,
-        postal_code: this.organization.postal_code,
-      }),
-    }
-  },
-  methods: {
-    update() {
-      this.form.put(this.route('organizations.update', this.organization.id))
-    },
-    destroy() {
+  setup (props) {
+    const form = useForm({
+      name: props.organization.name,
+      email: props.organization.email,
+      phone: props.organization.phone,
+      address: props.organization.address,
+      city: props.organization.city,
+      region: props.organization.region,
+      country: props.organization.country,
+      postal_code: props.organization.postal_code,
+    });
+
+    const update = () => form.put(route('organizations.update', props.organization.id));
+    const destroy = () => {
       if (confirm('Are you sure you want to delete this organization?')) {
-        this.$inertia.delete(this.route('organizations.destroy', this.organization.id))
+        Inertia.delete(route('organizations.destroy', props.organization.id))
       }
-    },
-    restore() {
+    };
+    const restore = () => {
       if (confirm('Are you sure you want to restore this organization?')) {
-        this.$inertia.put(this.route('organizations.restore', this.organization.id))
+        Inertia.put(route('organizations.restore', props.organization.id))
       }
-    },
+    };
+
+    return { form, update, destroy, restore };
   },
 }
 </script>

@@ -3,14 +3,14 @@
     <label v-if="label" class="form-label">{{ label }}:</label>
     <div class="form-input p-0" :class="{ error: errors.length }">
       <input ref="file" type="file" :accept="accept" class="hidden" @change="change" />
-      <div v-if="!value" class="p-2">
+      <div v-if="!modelValue" class="p-2">
         <button type="button" class="px-4 py-1 bg-gray-500 hover:bg-gray-700 rounded-sm text-xs font-medium text-white" @click="browse">
           Browse
         </button>
       </div>
       <div v-else class="flex items-center justify-between p-2">
         <div class="flex-1 pr-1">
-          {{ value.name }} <span class="text-gray-500 text-xs">({{ filesize(value.size) }})</span>
+          {{ modelValue.name }} <span class="text-gray-500 text-xs">({{ filesize(modelValue.size) }})</span>
         </div>
         <button type="button" class="px-4 py-1 bg-gray-500 hover:bg-gray-700 rounded-sm text-xs font-medium text-white" @click="remove">
           Remove
@@ -22,9 +22,12 @@
 </template>
 
 <script>
+import { ref, watch } from 'vue'
+
 export default {
+  emits: ['update:modelValue'],
   props: {
-    value: File,
+    modelValue: File,
     label: String,
     accept: String,
     errors: {
@@ -32,27 +35,28 @@ export default {
       default: () => [],
     },
   },
-  watch: {
-    value(value) {
-      if (!value) {
-        this.$refs.file.value = ''
+  setup (props, {emit}) {
+    const file = ref(null);
+
+    watch (
+      () => props.modelValue,
+      (value) => {
+        if (!value) {
+          file.value.value = '';
+        }
       }
-    },
-  },
-  methods: {
-    filesize(size) {
+    );
+
+    const filesize = (size) => {
       var i = Math.floor(Math.log(size) / Math.log(1024))
       return (size / Math.pow(1024, i)).toFixed(2) * 1 + ' ' + ['B', 'kB', 'MB', 'GB', 'TB'][i]
-    },
-    browse() {
-      this.$refs.file.click()
-    },
-    change(e) {
-      this.$emit('input', e.target.files[0])
-    },
-    remove() {
-      this.$emit('input', null)
-    },
+    };
+
+    const browse = () => file.value.click();
+    const change = (e) => emit('update:modelValue', e.target.files[0]);
+    const remove = () => emit('update:modelValue', null);
+
+    return { file, filesize, browse, change, remove };
   },
 }
 </script>

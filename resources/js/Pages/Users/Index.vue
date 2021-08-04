@@ -1,4 +1,6 @@
 <template>
+  <inertia-head title="Users" />
+
   <div>
     <h1 class="mb-8 font-bold text-3xl">Users</h1>
     <div class="mb-6 flex justify-between items-center">
@@ -18,7 +20,7 @@
       </search-filter>
       <inertia-link class="btn-indigo" :href="route('users.create')">
         <span>Create</span>
-        <span class="hidden md:inline">User</span>
+        <span class="hidden md:inline"> User</span>
       </inertia-link>
     </div>
     <div class="bg-white rounded-md shadow overflow-x-auto">
@@ -61,15 +63,16 @@
 </template>
 
 <script>
-import Icon from '@/Shared/Icon'
+import { reactive, watch } from 'vue'
+import { Inertia } from '@inertiajs/inertia'
 import pickBy from 'lodash/pickBy'
-import Layout from '@/Shared/Layout'
 import throttle from 'lodash/throttle'
-import mapValues from 'lodash/mapValues'
+import route from '@/route'
+import Icon from '@/Shared/Icon'
+import Layout from '@/Shared/Layout'
 import SearchFilter from '@/Shared/SearchFilter'
 
 export default {
-  metaInfo: { title: 'Users' },
   components: {
     Icon,
     SearchFilter,
@@ -79,27 +82,28 @@ export default {
     filters: Object,
     users: Array,
   },
-  data() {
-    return {
-      form: {
-        search: this.filters.search,
-        role: this.filters.role,
-        trashed: this.filters.trashed,
-      },
-    }
-  },
-  watch: {
-    form: {
-      deep: true,
-      handler: throttle(function() {
-        this.$inertia.get(this.route('users'), pickBy(this.form), { preserveState: true })
+  setup (props) {
+    const form = reactive({
+      search: props.filters.search,
+      role: props.filters.role,
+      trashed: props.filters.trashed,
+    });
+
+    watch(
+      form,
+      throttle(function () {
+        Inertia.get(route('users'), pickBy(form), { preserveState: true })
       }, 150),
-    },
-  },
-  methods: {
-    reset() {
-      this.form = mapValues(this.form, () => null)
-    },
+      {deep: true}
+    );
+
+    const reset = () => {
+      for (let key in form) {
+        form[key] = null;
+      }
+    };
+
+    return { form, reset };
   },
 }
 </script>

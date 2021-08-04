@@ -1,4 +1,6 @@
 <template>
+  <inertia-head title="Login" />
+
   <div class="p-6 bg-indigo-800 min-h-screen flex justify-center items-center">
     <div class="w-full max-w-md">
       <logo class="block mx-auto w-full max-w-xs fill-white" height="50" />
@@ -22,30 +24,30 @@
 </template>
 
 <script>
+import { useForm } from '@inertiajs/inertia-vue3'
+import route from '@/route'
 import Logo from '@/Shared/Logo'
 import TextInput from '@/Shared/TextInput'
 import LoadingButton from '@/Shared/LoadingButton'
 
 export default {
-  metaInfo: { title: 'Login' },
   components: {
     LoadingButton,
     Logo,
     TextInput,
   },
-  data() {
-    return {
-      form: this.$inertia.form({
-        email: 'johndoe@example.com',
-        password: 'secret',
-        remember: false,
-      }),
-    }
-  },
-  methods: {
-    login() {
-      this.form.post(this.route('login.store'))
-    },
+  setup () {
+    const form = useForm({
+      email: 'johndoe@example.com',
+      password: 'secret',
+      remember: false,
+    });
+
+    const login = () => {
+      form.post(route('login'));
+    };
+
+    return { form, login };
   },
 }
 </script>

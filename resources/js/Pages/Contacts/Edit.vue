@@ -1,4 +1,6 @@
 <template>
+  <inertia-head :title="`${form.first_name} ${form.last_name}`" />
+
   <div>
     <h1 class="mb-8 font-bold text-3xl">
       <inertia-link class="text-indigo-400 hover:text-indigo-600" :href="route('contacts')">Contacts</inertia-link>
@@ -39,6 +41,9 @@
 </template>
 
 <script>
+import { Inertia } from '@inertiajs/inertia'
+import { useForm } from '@inertiajs/inertia-vue3'
+import route from '@/route'
 import Layout from '@/Shared/Layout'
 import TextInput from '@/Shared/TextInput'
 import SelectInput from '@/Shared/SelectInput'
@@ -46,11 +51,6 @@ import LoadingButton from '@/Shared/LoadingButton'
 import TrashedMessage from '@/Shared/TrashedMessage'
 
 export default {
-  metaInfo() {
-    return {
-      title: `${this.form.first_name} ${this.form.last_name}`,
-    }
-  },
   components: {
     LoadingButton,
     SelectInput,
@@ -62,37 +62,33 @@ export default {
     contact: Object,
     organizations: Array,
   },
-  remember: 'form',
-  data() {
-    return {
-      form: this.$inertia.form({
-        first_name: this.contact.first_name,
-        last_name: this.contact.last_name,
-        organization_id: this.contact.organization_id,
-        email: this.contact.email,
-        phone: this.contact.phone,
-        address: this.contact.address,
-        city: this.contact.city,
-        region: this.contact.region,
-        country: this.contact.country,
-        postal_code: this.contact.postal_code,
-      }),
-    }
-  },
-  methods: {
-    update() {
-      this.form.put(this.route('contacts.update', this.contact.id))
-    },
-    destroy() {
+  setup (props) {
+    const form = useForm({
+      first_name: props.contact.first_name,
+      last_name: props.contact.last_name,
+      organization_id: props.contact.organization_id,
+      email: props.contact.email,
+      phone: props.contact.phone,
+      address: props.contact.address,
+      city: props.contact.city,
+      region: props.contact.region,
+      country: props.contact.country,
+      postal_code: props.contact.postal_code,
+    });
+
+    const update = () => form.put(route('contacts.update', props.contact.id));
+    const destroy = () => {
       if (confirm('Are you sure you want to delete this contact?')) {
-        this.$inertia.delete(this.route('contacts.destroy', this.contact.id))
+        Inertia.delete(route('contacts.destroy', props.contact.id))
       }
-    },
-    restore() {
+    };
+    const restore = () => {
       if (confirm('Are you sure you want to restore this contact?')) {
-        this.$inertia.put(this.route('contacts.restore', this.contact.id))
+        Inertia.put(route('contacts.restore', props.contact.id))
       }
-    },
+    };
+
+    return { form, update, destroy, restore };
   },
 }
 </script>

@@ -14,6 +14,7 @@
 import Icon from '@/Shared/Icon'
 
 export default {
+  emits: ['restore'],
   components: {
     Icon,
   },

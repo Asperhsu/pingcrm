@@ -1,4 +1,6 @@
 <template>
+  <inertia-head title="Create User" />
+
   <div>
     <h1 class="mb-8 font-bold text-3xl">
       <inertia-link class="text-indigo-400 hover:text-indigo-600" :href="route('users')">Users</inertia-link>
@@ -26,6 +28,8 @@
 </template>
 
 <script>
+import { useForm } from '@inertiajs/inertia-vue3'
+import route from '@/route'
 import Layout from '@/Shared/Layout'
 import FileInput from '@/Shared/FileInput'
 import TextInput from '@/Shared/TextInput'
@@ -33,7 +37,6 @@ import SelectInput from '@/Shared/SelectInput'
 import LoadingButton from '@/Shared/LoadingButton'
 
 export default {
-  metaInfo: { title: 'Create User' },
   components: {
     FileInput,
     LoadingButton,
@@ -41,23 +44,19 @@ export default {
     TextInput,
   },
   layout: Layout,
-  remember: 'form',
-  data() {
-    return {
-      form: this.$inertia.form({
-        first_name: null,
-        last_name: null,
-        email: null,
-        password: null,
-        owner: false,
-        photo: null,
-      }),
-    }
-  },
-  methods: {
-    store() {
-      this.form.post(this.route('users.store'))
-    },
+  setup () {
+    const form = useForm({
+      first_name: null,
+      last_name: null,
+      email: null,
+      password: null,
+      owner: false,
+      photo: null,
+    });
+
+    const store = () => form.post(route('users.store'));
+
+    return { form, store };
   },
 }
 </script>
